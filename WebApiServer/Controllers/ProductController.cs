@@ -22,28 +22,52 @@ namespace WebApiServer.Controllers
 
         [HttpGet]
         [Route("GetProducts")]
-        public async Task<IActionResult> Get()
+        public async Task<ActionResult<List<Product>>> Get()
         {
-            return Ok();
+            try
+            {
+                var products = _product.GetProducts();
+                return Ok(products);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }          
         }
 
         [HttpGet]
         [Route("GetProductById/{id}")]
         public async Task<ActionResult<Product>> Get(Guid id)
         {
-            return Ok();
+            try
+            {
+                var product = _product.GetProductById(id);
+                if (product != null)
+                    return Ok(product);
+                else
+                    return NotFound("Product not found");
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
         }
 
         [HttpPost]
         [Route("CreateProduct")]
         public async Task<ActionResult<Product>> Create(Product request)
         {
-            if(ModelState.IsValid)
+            try
             {
-                var result = _product.Creeate(request);
-                return Ok(result);
+                if (ModelState.IsValid)
+                    return Ok(await _product.Creeate(request));
+                else
+                    return BadRequest("Invalid data");
             }
-            return BadRequest("Invalid data");
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }          
         }
 
 
@@ -51,12 +75,17 @@ namespace WebApiServer.Controllers
         [Route("UpdateProduct")]
         public async Task<ActionResult<Product>> Update(Product request)
         {
-            if (ModelState.IsValid)
+            try
             {
-                var result = _product.Update(request);
-                return Ok(result);  
+                if (ModelState.IsValid)
+                    return Ok(await _product.Update(request));
+                else
+                    return BadRequest();
             }
-            return BadRequest();
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }      
         }
 
 
@@ -64,12 +93,22 @@ namespace WebApiServer.Controllers
         [Route("DeleteProduct")]
         public async Task<ActionResult<Product>> Delete(Product request)
         {
-            if (ModelState.IsValid)
+            try
             {
-                var result = _product.Delete(request);
-                return Ok(result);
+                if (ModelState.IsValid)
+                {
+                    await _product.Delete(request);
+                    return Ok("Product was removed");
+                }
+                else
+                {
+                    return BadRequest();
+                }
             }
-            return BadRequest();
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
     }
 }
